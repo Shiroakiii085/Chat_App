@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Thiết lập pnpm
 ENV PNPM_HOME="/pnpm"
@@ -31,7 +31,7 @@ RUN pnpm build
 # Chạy lệnh prune để xoá devDependencies (tuỳ chọn, nhưng ta dùng cách copy qua runner sẽ nhẹ hơn)
 
 # Stage 2: Runner
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 ENV NODE_ENV production
 
