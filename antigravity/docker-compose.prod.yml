@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-antigravity}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-antigravity_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-antigravity}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-antigravity}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - antigravity-net
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD:-antigravity_redis}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-antigravity_redis}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - antigravity-net
+
+  server:
+    image: ghcr.io/YOUR_GITHUB_USERNAME/antigravity-server:latest
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env.prod
+    ports:
+      - "4000:4000"
+    networks:
+      - antigravity-net
+
+  web:
+    image: ghcr.io/YOUR_GITHUB_USERNAME/antigravity-web:latest
+    restart: always
+    depends_on:
+      - server
+    env_file:
+      - .env.prod
+    ports:
+      - "3000:3000"
+    networks:
+      - antigravity-net
+
+networks:
+  antigravity-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
