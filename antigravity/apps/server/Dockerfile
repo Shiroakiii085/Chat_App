@@ -71,4 +71,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 
 WORKDIR /app/apps/server
 
-CMD ["sh", "-c", "npx prisma migrate deploy --schema prisma/schema.prisma && node dist/src/main"]
+CMD ["sh", "-c", "if [ -z \"$DATABASE_URL\" ]; then echo 'ERROR: DATABASE_URL is not set!'; exit 1; fi && npx prisma migrate deploy --schema prisma/schema.prisma && node dist/src/main"]
