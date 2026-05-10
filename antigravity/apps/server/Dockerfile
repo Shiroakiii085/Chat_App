@@ -60,6 +60,7 @@ COPY --chown=nestjs:nodejs --from=builder /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs --from=builder /app/apps/server/node_modules ./apps/server/node_modules
 COPY --chown=nestjs:nodejs --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --chown=nestjs:nodejs --from=builder /app/apps/server/prisma ./apps/server/prisma
+COPY --chown=nestjs:nodejs --from=builder /app/apps/server/prisma.config.ts ./prisma.config.ts
 COPY --chown=nestjs:nodejs --from=builder /app/apps/server/package.json ./apps/server/package.json
 
 EXPOSE 4000
