@@ -55,7 +55,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Set online status in Redis with 35s TTL
       await this.redis.set(`online:${userId}`, '1', 'EX', 35);
-      
+
       // Broadcast online status to everyone (or specific rooms)
       this.server.emit('user_status', { userId, isOnline: true });
     } catch (e) {
@@ -163,7 +163,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.user.id;
 
     await this.prisma.conversationMember.update({
-      where: { conversationId_userId: { conversationId: data.conversationId, userId } },
+      where: {
+        conversationId_userId: { conversationId: data.conversationId, userId },
+      },
       data: { lastReadAt: new Date() },
     });
 

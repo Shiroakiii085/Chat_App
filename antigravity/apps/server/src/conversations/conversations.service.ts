@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDirectDto } from './dto/create-direct.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -11,7 +16,9 @@ export class ConversationsService {
 
   async createDirect(userId: string, dto: CreateDirectDto) {
     if (userId === dto.targetUserId) {
-      throw new BadRequestException('Cannot create a direct message with yourself');
+      throw new BadRequestException(
+        'Cannot create a direct message with yourself',
+      );
     }
 
     // Check if DM already exists
@@ -74,9 +81,7 @@ export class ConversationsService {
         name: dto.name,
         // we can store description in a separate table or just omit if schema doesn't have it
         members: {
-          create: [
-            { userId, role: Role.OWNER },
-          ],
+          create: [{ userId, role: Role.OWNER }],
         },
       },
       include: { members: true },
@@ -95,8 +100,12 @@ export class ConversationsService {
             },
             members: {
               take: 5,
-              include: { user: { select: { id: true, displayName: true, avatarUrl: true } } }
-            }
+              include: {
+                user: {
+                  select: { id: true, displayName: true, avatarUrl: true },
+                },
+              },
+            },
           },
         },
       },
@@ -119,7 +128,12 @@ export class ConversationsService {
     });
   }
 
-  async getMessages(conversationId: string, userId: string, cursor?: string, limit = 50) {
+  async getMessages(
+    conversationId: string,
+    userId: string,
+    cursor?: string,
+    limit = 50,
+  ) {
     // Check if member
     const membership = await this.prisma.conversationMember.findUnique({
       where: {
@@ -136,16 +150,25 @@ export class ConversationsService {
       skip: cursor ? 1 : 0,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: { createdAt: 'desc' },
-      include: { sender: { select: { id: true, displayName: true, avatarUrl: true } } },
+      include: {
+        sender: { select: { id: true, displayName: true, avatarUrl: true } },
+      },
     });
   }
 
-  async addMember(conversationId: string, requesterId: string, newUserId: string) {
+  async addMember(
+    conversationId: string,
+    requesterId: string,
+    newUserId: string,
+  ) {
     const requester = await this.prisma.conversationMember.findUnique({
       where: { conversationId_userId: { conversationId, userId: requesterId } },
     });
 
-    if (!requester || (requester.role !== Role.OWNER && requester.role !== Role.ADMIN)) {
+    if (
+      !requester ||
+      (requester.role !== Role.OWNER && requester.role !== Role.ADMIN)
+    ) {
       throw new ForbiddenException('Not authorized to add members');
     }
 
@@ -158,21 +181,35 @@ export class ConversationsService {
     });
   }
 
-  async kickMember(conversationId: string, requesterId: string, targetUserId: string) {
+  async kickMember(
+    conversationId: string,
+    requesterId: string,
+    targetUserId: string,
+  ) {
     const requester = await this.prisma.conversationMember.findUnique({
       where: { conversationId_userId: { conversationId, userId: requesterId } },
     });
 
-    if (!requester || (requester.role !== Role.OWNER && requester.role !== Role.ADMIN)) {
+    if (
+      !requester ||
+      (requester.role !== Role.OWNER && requester.role !== Role.ADMIN)
+    ) {
       throw new ForbiddenException('Not authorized to kick members');
     }
 
     return this.prisma.conversationMember.delete({
-      where: { conversationId_userId: { conversationId, userId: targetUserId } },
+      where: {
+        conversationId_userId: { conversationId, userId: targetUserId },
+      },
     });
   }
 
-  async updateRole(conversationId: string, requesterId: string, targetUserId: string, newRole: Role) {
+  async updateRole(
+    conversationId: string,
+    requesterId: string,
+    targetUserId: string,
+    newRole: Role,
+  ) {
     const requester = await this.prisma.conversationMember.findUnique({
       where: { conversationId_userId: { conversationId, userId: requesterId } },
     });
@@ -182,7 +219,9 @@ export class ConversationsService {
     }
 
     return this.prisma.conversationMember.update({
-      where: { conversationId_userId: { conversationId, userId: targetUserId } },
+      where: {
+        conversationId_userId: { conversationId, userId: targetUserId },
+      },
       data: { role: newRole },
     });
   }

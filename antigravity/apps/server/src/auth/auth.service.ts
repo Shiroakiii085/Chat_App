@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
@@ -20,7 +24,7 @@ export class AuthService {
 
   private async generateTokens(userId: string, email: string) {
     const payload = { sub: userId, email };
-    
+
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET || 'access_secret',
       expiresIn: '15m',
@@ -28,7 +32,7 @@ export class AuthService {
 
     const rawRefreshString = randomBytes(64).toString('hex');
     const refreshTokenHash = await bcrypt.hash(rawRefreshString, 10);
-    
+
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
@@ -51,14 +55,16 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     const { email, password, displayName } = registerDto;
-    
-    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
     if (existingUser) {
       throw new BadRequestException('User with this email already exists');
     }
 
     const passwordHash = await this.hashPassword(password);
-    
+
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -82,7 +88,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
-    
+
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
@@ -136,7 +142,10 @@ export class AuthService {
     await this.prisma.refreshToken.delete({ where: { id: tokenId } });
 
     // Generate new tokens
-    return this.generateTokens(refreshTokenDoc.user.id, refreshTokenDoc.user.email);
+    return this.generateTokens(
+      refreshTokenDoc.user.id,
+      refreshTokenDoc.user.email,
+    );
   }
 
   async logout(refreshTokenRaw: string) {
@@ -156,7 +165,8 @@ export class AuthService {
     }
 
     const { email, firstName, lastName, picture } = req.user;
-    const displayName = `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0];
+    const displayName =
+      `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0];
 
     let user = await this.prisma.user.findUnique({ where: { email } });
 
