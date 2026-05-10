@@ -70,4 +70,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 
 WORKDIR /app/apps/server
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
