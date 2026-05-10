@@ -8,6 +8,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
+  app.enableCors({
+    origin: true, // In production, replace with your Vercel URL for better security
+    credentials: true,
+  });
+
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);
