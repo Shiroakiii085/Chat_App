@@ -70,4 +70,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 
 WORKDIR /app/apps/server
 
-CMD ["sh", "-c", "npx prisma migrate deploy --schema prisma/schema.prisma && node dist/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema prisma/schema.prisma && node dist/src/main"]
