@@ -20,6 +20,9 @@ COPY packages/types ./packages/types
 # Copy ứng dụng web
 COPY apps/web ./apps/web
 
+# Đảm bảo thư mục public tồn tại để tránh lỗi COPY ở stage sau
+RUN mkdir -p apps/web/public
+
 # Cài đặt dependencies
 RUN pnpm install --frozen-lockfile
 
